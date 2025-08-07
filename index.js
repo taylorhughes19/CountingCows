@@ -27,13 +27,16 @@ const Game = mongoose.model("Game", gameSchema);
 
 app.post("/save-game", async (req, res) => {
   try {
+    console.log("Incoming request body:", req.body); // ✅ See incoming data
     const newGame = new Game(req.body);
-    await newGame.save();
+    await newGame.save(); // 👈 This is where the failure likely happens
     res.status(200).json({ message: "Game saved successfully." });
   } catch (err) {
-    res.status(500).json({ error: "Failed to save game." });
+    console.error("❌ Save failed:", err); // ✅ Log the actual error
+    res.status(500).json({ error: "Failed to save game.", details: err.message });
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
