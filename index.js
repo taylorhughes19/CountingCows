@@ -4,15 +4,15 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-const port = process.env.PORT; // ✅ Use ONLY the port Render gives us
+const port = process.env.PORT; // ✅ Render gives the correct port
 
 app.use(cors());
 app.use(express.json());
 
-// 🔐 Connect to MongoDB
+// 🔐 MongoDB connection
 const uri = process.env.MONGODB_URI;
 
-console.log("MONGODB_URI:", uri); // ✅ TEMP: Confirm it's set
+console.log("MONGODB_URI:", uri); // For debug
 
 if (!uri) {
   console.error("❌ MONGODB_URI is not defined!");
@@ -32,7 +32,7 @@ client.connect()
     process.exit(1);
   });
 
-// ✅ Root route (optional)
+// ✅ Root check
 app.get("/", (req, res) => {
   res.send({ message: "API is working" });
 });
@@ -53,7 +53,7 @@ app.post("/save-game", async (req, res) => {
   }
 });
 
-// ✅ Get all saved games
+// ✅ Get all games
 app.get("/get-games", async (req, res) => {
   try {
     const games = await db.collection("games").find().sort({ date: -1 }).toArray();
@@ -71,4 +71,17 @@ app.delete("/delete-game/:id", async (req, res) => {
     const result = await db.collection("games").deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 1) {
-      res.
+      res.json({ message: "Game deleted successfully." });
+    } else {
+      res.status(404).json({ error: "Game not found." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete game.", details: error.message });
+  }
+});
+
+// ✅ Start server
+app.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
+});
+
